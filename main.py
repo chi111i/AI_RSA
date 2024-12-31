@@ -46,7 +46,7 @@ def is_garbled(text):
     # 检查文本是否为乱码的简单逻辑
     # 这里假设如果文本中有超过一定比例的不可打印字符，则认为是乱码
     non_printable_ratio = len(re.findall(r'[^\x20-\x7E]', text)) / len(text)
-    return non_printable_ratio > 0.3
+    return non_printable_ratio > 0.1
 
 def get_fixed_code(error_message, original_code):
     # 请求AI修复代码
@@ -72,8 +72,20 @@ def get_fixed_code(error_message, original_code):
 
     return response_content
 
-def run_rsa_ctf_tool(n, e, cipher_text, timeout=20):
-    command = ['myenv/bin/python', 'RsaCtfTool/RsaCtfTool.py', '-n', str(n), '-e', str(e), '--decrypt', str(cipher_text)]
+def run_rsa_ctf_tool(n=None, p=None, q=None, e=None, cipher_text=None, timeout=20):
+    command = ['myenv/bin/python', 'RsaCtfTool/RsaCtfTool.py']
+    
+    if n:
+        command.extend(['-n', str(n)])
+    if p:
+        command.extend(['-p', str(p)])
+    if q:
+        command.extend(['-q', str(q)])
+    if e:
+        command.extend(['-e', str(e)])
+    if cipher_text:
+        command.extend(['--decrypt', str(cipher_text)])
+    
     print(f"\n运行 RsaCtfTool 命令：{' '.join(command)}")
     try:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', timeout=timeout)
@@ -142,7 +154,7 @@ def run_rsacracker(filename='data.txt', timeout=60):
     except Exception as e:
         return False, str(e)
 
-token = "YOUR_OPENAI"
+token = "AI_KEY"
 endpoint = "https://models.inference.ai.azure.com"
 model_name = "gpt-4o"
 
@@ -184,6 +196,8 @@ def main():
             
             # 提取所有已知的RSA参数
             n = rsa_params.get('n')
+            p = rsa_params.get('p')
+            q = rsa_params.get('q')
             e = rsa_params.get('e')
             cipher_text = rsa_params.get('c')
             
@@ -209,7 +223,7 @@ def main():
             
             # 调用 RsaCtfTool 进行解密
             print("\n尝试使用 RsaCtfTool 进行解密...")
-            success, output = run_rsa_ctf_tool(n, e, cipher_text)
+            success, output = run_rsa_ctf_tool(n, p, q, e, cipher_text)
             
             if success:
                 print("\nRsaCtfTool 运行成功！输出结果：")
@@ -274,6 +288,8 @@ def main():
         save_rsa_parameters_to_txt(rsa_params)
         
         n = rsa_params.get('n')
+        p = rsa_params.get('p')
+        q = rsa_params.get('q')
         e = rsa_params.get('e')
         cipher_text = rsa_params.get('c')
         
@@ -299,7 +315,7 @@ def main():
         
         # 调用 RsaCtfTool 进行解密
         print("\n尝试使用 RsaCtfTool 进行解密...")
-        success, output = run_rsa_ctf_tool(n, e, cipher_text)
+        success, output = run_rsa_ctf_tool(n, p, q, e, cipher_text)
         
         if success:
             print("\nRsaCtfTool 运行成功！输出结果：")
