@@ -4,7 +4,7 @@
 
 # 环境
 
-需要wsl python3.9环境
+需要wsl python3.9虚拟环境和以下项目
 
 https://github.com/2740908911/CTFRSAtools
 
